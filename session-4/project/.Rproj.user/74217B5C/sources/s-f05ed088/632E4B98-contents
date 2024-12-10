@@ -1,0 +1,32 @@
+
+
+fluidPage(
+  tagList(
+    tags$link(rel = "stylesheet", type = "text/css", href = "css/custom.css")#,
+    # tags$link(rel = "stylesheet", type = "text/css", href = "https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css")
+  ),
+  
+  h1("Session 1: Bootstrap grid practise"),
+  fluidRow(class = "bordered",
+           column(4,
+                  p("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."),
+                  p("Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. "),
+                  p("Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."),
+                  p("Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.")
+           ),
+           
+           column(4,
+                  p("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."),
+                  p("Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. "),
+                  p("Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."),
+                  p("Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.")
+           ),
+  ),
+  fluidRow(class = "bordered",
+    column(6, uiOutput("controls")),
+    column(6, 
+           uiOutput("tableTitle"),
+           plotOutput("mainTable")
+         )
+  )
+)

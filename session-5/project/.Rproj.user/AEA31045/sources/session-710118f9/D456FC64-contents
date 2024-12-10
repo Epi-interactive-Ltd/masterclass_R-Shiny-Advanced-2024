@@ -1,0 +1,36 @@
+temperature_filters_ui <- function(id) {
+  ns <- NS(id)
+  tagList(
+    selectInput(
+      inputId = ns("column_order"),
+      label = "Select a column to order by:",
+      choices = NULL
+    ),
+    selectInput(
+      inputId = ns("order_direction"),
+      label = "Order direction:",
+      choices = c("Ascending" = "asc", "Descending" = "desc"),
+      selected = "Ascending"
+    ),
+    sliderInput(
+      inputId = ns("date_slider"),
+      label = "Select a date range:",
+      min = 1995,
+      max = 2020,
+      value = c(1995, 2020),
+      step = 1,
+      sep = ""
+    )
+  )
+}
+
+
+filters_server <- function(id) {
+  
+  moduleServer(
+    id,
+    function(input, output, session) {
+      ns <- session$ns
+    }
+  )
+}

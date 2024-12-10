@@ -1,0 +1,82 @@
+
+quarto_module_ui <- function(id) {
+    
+    ns <- NS(id)
+    tagList(
+      
+      
+      uiOutput(ns("pdfButton"))  
+    )
+    
+
+}
+
+
+quarto_module_server <- function(id, filtered_data, filter_inputs, temperature_data) {
+    
+    moduleServer(
+        id, 
+        function(input, output, session) {
+            
+            ns <- session$ns
+            
+            observeEvent(list(input$name, input$download_reason), {
+              req(input$name, input$download_reason)
+              if(input$name != "" & input$download_reason != ""){
+                # Make sure that both inputs are filled in
+                shinyjs::enable("downloadPDF")
+              }else{
+                shinyjs::disable("downloadPDF")
+              }
+            })
+            
+            
+            output$pdfButton <- renderUI({
+                # Force pdf button to only display if there is filtered data
+                req(filtered_data())
+                wellPanel(
+                  textInput(
+                    inputId = ns("name"),
+                    label = "Enter your name: ",
+                    value = ""
+                    
+                  ),
+                  textInput(
+                    inputId = ns("download_reason"),
+                    label = "Reason for download",
+                    value = ""
+                  ),
+                  shinyjs::disabled(downloadButton(ns("downloadPDF"), "Download Quarto Markdown Report"))
+                )
+                
+                    
+                
+            })
+            
+            output$downloadPDF <- downloadHandler(
+                filename = function() {
+                    # returned file name
+                    return("Masterclass_Quarto_Report.pdf")
+                },
+                content = function(file) {
+                  message(paste0("Name: ", input$name))
+                  message(paste0("Reason for downloading: ", input$download_reason))
+                    # render quarto file to local file 'report.pdf'
+                    quarto::quarto_render(input = "report.qmd",
+                                          execute_params = list(
+                                              filters = filter_inputs(),
+                                              world_data = world_data,
+                                              temp_data = temperature_data()
+                                          ),
+                                          output_file = "report.pdf",
+                                          output_format = "pdf"
+                    )
+                    
+                    # return local file 'report.pdf'
+                    file.copy("report.pdf", file)
+                }
+            )
+        }
+    )
+    
+}

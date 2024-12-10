@@ -1,0 +1,49 @@
+
+
+shinyServer(function(input, output, session) {
+  
+  output$controls <- renderUI({
+    selectInput("dataset", "Select a dataset to display", choices = c("Oranges", "Islands"))
+  })
+  
+  
+  output$content <- renderUI({
+    tagList(
+      fluidRow(uiOutput("description")),
+      fluidRow(uiOutput("plotContainer"))
+    )
+  })
+  
+  output$description <- renderUI({
+    
+    title <- input$dataset
+    
+    tagList(
+      h1(title),
+      br(),
+      p("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."),
+      br()
+    )
+  })
+  
+  output$plotContainer <- renderUI({
+    div(
+      plotOutput("plot")
+    )
+  })
+
+  output$plot <- renderPlot({
+    
+    if(input$dataset == "Oranges") {
+      data(Orange) # Load the data
+      dat <- Orange
+    }
+    else if (input$dataset == "Islands") {
+      data(islands) # Load the data
+      dat <- islands
+    }
+    
+    plot(dat)
+  })  
+  
+})

@@ -1,0 +1,83 @@
+generate_plot <- function(data, isGGplot = F) {
+    data <- data %>% 
+        group_by(subregion) %>% 
+        summarise(
+            avgLifeExp = mean(lifeExp, na.rm = T),
+            avgGdpPercap = mean(gdpPercap, na.rm = T)
+        ) %>%
+        st_drop_geometry()
+    
+    y_theme <- list(
+        title = list(
+            text = "Life Expp",
+            standoff = 15
+        ),
+        ticklen = 15,
+        showline = T
+    )
+    
+    x_theme <- list(
+        title = list(
+            text = "Subregion",
+            standoff = 10
+        ),
+        showgrid = F,
+        tickangle = 90,
+        showline = T
+    )
+    
+    # create the legend customisation list
+    legend_theme <- list(
+        font = list( 
+            family = "sans-serif",
+            size = 10,
+            color = "#000"),
+        bgcolor = "#F5F5F5",
+        bordercolor = "#000",
+        borderwidth = 1,
+        yanchor="top",
+        y=0.99,
+        xanchor="left",
+        x=1.11
+    )
+    
+    chart_colours <- RColorBrewer::brewer.pal(n = max(3,length(unique(data$subregion))),
+                                              name = "Paired")   
+    
+    gdp_hover <- 'Average GDP per cap for <b>%{x}:</b> %{y}<extra></extra>'
+
+    if(isGGplot) {
+      chart_colours <- chart_colours[1:length(unique(data$subregion))]
+      return(
+        ggplot(data, aes(x=subregion, y=avgGdpPercap)) + 
+          geom_bar(stat = "identity", fill = chart_colours) +
+          xlab("Subregion") + 
+          ylab("Life Expp")
+      )
+    }
+    
+    fig <- plot_ly(
+        data = data,
+        x = ~subregion,
+        y = ~avgGdpPercap,
+        type = "bar",
+        colors = chart_colours,
+        color = ~subregion,
+        hovertemplate = gdp_hover
+    )
+    
+    fig <- fig %>% layout(
+        xaxis = x_theme,
+        yaxis = y_theme,
+        legend = legend_theme
+    )
+    return(fig)
+}
+
+summary_points <- function(data) {
+  list(
+    nrows = sprintf("Number of rows: %s", nrow(data)),
+    area = sprintf("Total Area: %.2f sq. km", sum(data$area_km2)),
+    pop = sprintf("Total Population: %.2f", sum(data$pop, na.rm = T))
+  )
+}

@@ -1,0 +1,238 @@
+# Result
+shinyServer(function(input, output) {
+  
+  filtered_data <- reactive({
+    
+    if(input$country != "All"){
+      data <- world_data %>% filter(
+        name_long %in% input$country
+      )
+    }else if(input$subregion != "All"){
+      data <- world_data %>% filter(
+        subregion %in% input$subregion
+      )
+    }else if(input$region != "All"){
+      data <- world_data %>% filter(
+        region_un %in% input$region
+      )     
+    }else{
+      data <- world_data 
+    }
+    
+    
+  })
+  
+
+# update select inputs ----------------------------------------------------
+
+  
+  
+  observeEvent(input$region, {
+    sub_regions <- world_data %>% filter(
+      region_un %in% input$region
+    ) %>% select(subregion)
+    
+    updateSelectInput(inputId="subregion",
+                      choices=c("All", unique(sub_regions$subregion))
+    )
+  })
+  
+  observeEvent(input$subregion, {
+    countries <- world_data %>% filter(
+      subregion %in% input$subregion
+    ) %>% select(name_long)
+    
+    updateSelectInput(inputId="country",
+                      choices=c("All", unique(countries$name_long)))
+  })
+  
+# creating a dynamic colour palette 
+  colorpal <- reactive({
+    
+    colorNumeric(brewer.pal(5, "RdPu"), filtered_data()[[input$highlight]])
+    
+  })
+  
+  # # create the base map here, add tiles and the base layer of country shapes
+  output$map <- renderLeaflet({
+    
+    m <- leaflet() %>%
+      addTiles() %>%
+      addPolygons(data = filtered_data(), group = "outlines",
+                  stroke = T, weight = 0.5, color = "#444", opacity = 1,
+                  fill = F)
+    m
+  })
+  
+  
+
+# Modify the map ----------------------------------------------------------
+
+  
+  
+  # # when the continent data changes, redraw the highlighted shapes
+  observe({
+    pal <- colorpal()
+    
+    if(input$highlight == "gdpPercap"){
+      out <- leafletProxy("map") %>%
+        clearGroup("highlight") %>%
+        addPolygons(data = filtered_data(), group = "highlight",
+                    stroke = T, weight = 1, color = "#444", opacity = 1,
+                    fillColor = ~pal(gdpPercap), fillOpacity = 0.8, popup = ~popupText)
+    }else{
+      out <- leafletProxy("map") %>%
+        clearGroup("highlight") %>%
+        addPolygons(data = filtered_data(), group = "highlight",
+                    stroke = T, weight = 1, color = "#444", opacity = 1,
+                    fillColor = ~pal(lifeExp), fillOpacity = 0.8, popup = ~popupText)
+    }
+    
+    
+  })
+  
+  # # use a separate observe to show / hide the legend
+  observe({
+    pal <- colorpal()
+    
+    out <- leafletProxy("map") %>%
+      clearControls()
+    if(input$country == "All"){
+      out <- out %>%
+        addLegend(position = "bottomright", pal = pal, values = filtered_data()[[input$highlight]], title=input$highlight)
+      
+    }
+    
+  })
+  
+  
+  # Graph stuff
+  
+  output$world_data_chart <- renderPlotly({
+    
+    data <- filtered_data() %>% 
+      group_by(subregion) %>% 
+      summarise(
+        avgLifeExp = mean(lifeExp, na.rm = T),
+        avgGdpPercap = mean(gdpPercap, na.rm = T)
+      ) %>%
+      st_drop_geometry()
+    
+    y_theme <- list(
+      title = list(
+        text = "Life Expp",
+        standoff = 15
+      ),
+      ticklen = 15,
+      showline = T
+    )
+    
+    x_theme <- list(
+      title = list(
+        text = "Subregion",
+        standoff = 10
+      ),
+      showgrid = F,
+      tickangle = 90,
+      showline = T
+    )
+    
+    # create the legend customisation list
+    legend_theme <- list(
+      font = list( 
+        family = "sans-serif",
+        size = 10,
+        color = "#000"),
+      bgcolor = "#F5F5F5",
+      bordercolor = "#000",
+      borderwidth = 1,
+      yanchor="top",
+      y=0.99,
+      xanchor="left",
+      x=1.11
+    )
+    
+    chart_colours <- RColorBrewer::brewer.pal(n = length(unique(data$subregion)),
+                                                name = "Paired")   
+    
+    
+    
+    life_exp_hover <- 'Average Life Expectancy for <b>%{x}:</b> %{y}<extra></extra>'
+    gdp_hover <- 'Average GDP per cap for <b>%{x}:</b> %{y}<extra></extra>'
+    
+    fig <- plot_ly(
+      data = data,
+      x = ~subregion,
+      y = if(input$highlight == "lifeExp") ~avgLifeExp else ~avgGdpPercap,
+      type = "bar",
+      colors = chart_colours,
+      color = ~subregion,
+      hovertemplate = if(input$highlight == "lifeExp") life_exp_hover else gdp_hover
+    )
+    
+    
+    
+    fig <- fig %>% layout(
+      xaxis = x_theme,
+      yaxis = y_theme,
+      legend = legend_theme
+    )
+    fig
+  })
+  
+  output$alcohol_graph <- renderPlotly({
+    countries <- filtered_data()$name_long
+    
+    data <- alcohol_consumption %>%
+      filter(Entity %in% countries)
+    
+    fig <- plot_ly(
+      data = data,
+      x = ~Year,
+      y = ~Alcohol_Consumption,
+      name = ~Entity,
+      type = 'scatter',
+      mode = 'lines'
+    )
+    
+    return(fig)
+  })
+  
+  output$table <- renderDataTable({ 
+    
+    data <- filtered_data() %>% select(
+      "Region" = "region_un",
+      "Subregion" = "subregion",
+      "Country" = "name_long",
+      "Life Expectancy" = "lifeExp",
+      "GDP Per cap" = "gdpPercap"
+    ) %>%
+      st_drop_geometry()
+    
+    datatable(
+      data,
+      rownames = FALSE,
+      colnames = names(data),
+      escape = F,
+      selection = "none"
+    )
+    
+  })
+  
+  output$export <- downloadHandler(
+    filename = function() {
+      return("filtered_world_data.csv")
+    },
+    content = function(file) {
+      
+      
+      data <- filtered_data() %>% select(
+        iso_a2, region_un, subregion, name_long, lifeExp, gdpPercap
+      ) %>%
+        st_drop_geometry()
+      
+      write.csv(data, file = file, row.names = F)
+    }
+  )
+  
+})

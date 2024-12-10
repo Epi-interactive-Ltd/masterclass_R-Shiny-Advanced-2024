@@ -1,0 +1,35 @@
+library(shiny)
+
+shinyUI(
+  fluidPage(
+    h2("Vote for your favourite!"),
+    wellPanel(
+      img(src = "sea_lion.jpg", height = "300px"),
+      img(src = "puffin.jpg", height = "300px"),
+      img(src = "lamb.jpg", height = "300px"),
+      img(src = "horses.jpg", height = "300px")
+    ),
+    wellPanel(
+      actionButton("sealion", "Sea lion"),
+      actionButton("puffin", "Puffin"),
+      actionButton("lamb", "Lamb"),
+      actionButton("horse", "Horse")
+    ),
+    wellPanel(
+      actionButton("submit", "Reveal votes"),
+      actionButton("reset", "Reset")
+    ),
+    wellPanel(
+      
+      fluidRow(
+        column(3, tags$b("Live results"),
+               uiOutput("liveDisplay")
+        ),
+        column(3,
+               uiOutput("finalDisplay")
+        )
+        
+      )
+    )
+  )
+)

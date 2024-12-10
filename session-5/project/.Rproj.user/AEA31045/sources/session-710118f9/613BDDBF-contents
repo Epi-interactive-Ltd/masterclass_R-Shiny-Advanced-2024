@@ -1,0 +1,51 @@
+
+library(shiny)
+library(dplyr)
+library(readr)
+library(leaflet)
+library(plotly)
+library(spData)
+library(sf)
+library(DT)
+library(RColorBrewer)
+library(odbc)
+library(DBI)
+library(dbplyr)
+
+library(shinyjs)
+library(shiny.router)
+library(shinyWidgets)
+
+# load the new modules using the source() function
+source("src/nav-module.R")
+source("src/filters-module.R")
+source("src/chart-page-module.R")
+source("src/table-page-module.R")
+source("src/temperature-page-module.R")
+source("src/temperature-filters-module.R")
+
+
+# load world data from the spData package
+world_data <- spData::world |>
+  filter(name_long != "Antarctica") |>
+  mutate(popDensity = round(pop / area_km2, 4)) |>
+  st_drop_geometry()
+
+con <- DBI::dbConnect(
+  RPostgres::Postgres(),
+  dbname = "epiworkshop",
+  host = "db.epi-interactive.com",
+  port = 5432,
+  user = "student",
+  password = "student"
+)
+
+getCountries <- function(country_iso_codes){
+    codes <- paste0("'", country_iso_codes, "'", collapse = ", ")
+
+    query <- paste("SELECT region, country, iso_a2, city, month, day, year, avg_temp, date",
+                   "FROM world_temp_data",
+                   "WHERE iso_a2 IN (", codes, ")")
+  result <- dbGetQuery(con, query)
+}
+

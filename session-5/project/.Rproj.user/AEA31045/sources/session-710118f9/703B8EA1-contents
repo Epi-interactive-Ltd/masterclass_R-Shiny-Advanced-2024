@@ -1,0 +1,129 @@
+temperature_page_ui <- function(id){
+  ns <- NS(id)
+  div(
+    wellPanel(
+      fluidRow(
+        div(
+          class = "col-3",
+          wellPanel(
+            temperature_filters_ui(ns("temperature_filter"))
+          )
+        ),
+        div(
+          class = "col-9",
+          wellPanel(
+            uiOutput(ns("temperature_table"))
+          )
+        )
+      )
+    )
+    
+  )
+}
+
+temperature_page_server <- function(id, filtered_data) {
+  
+  moduleServer(
+    id,
+    function(input, output, session) {
+      ns <- session$ns
+      
+      observeEvent(ns("go"), {
+        browser()
+      }, ignoreInit = T)
+      
+      selected_countries <- reactive({
+
+    
+        validate(need(length(input$country) > 0 , "Please select a country first."))
+
+        input$country
+      })
+
+      temperature_table_data <- reactive({
+        sel_countries <- selected_countries()
+
+        temp_data <- getCountries(selected_countries_iso())
+        temp_data <- as.data.frame(temp_data)
+
+        temp_data <- temp_data %>% group_by(
+          country, city, region, month, year
+        ) %>% summarise(
+          avg_monthly_temp = sprintf("%.2f", mean(avg_temp, na.rm = T)),
+          date = format(date, "%m-%Y")
+        ) %>%
+
+          select(
+            "Region" = "region",
+            "Country" = "country",
+            "City" = "city",
+            "Month_Year" = date,
+            "Average_Temperature" = "avg_monthly_temp"
+          ) %>% distinct()
+
+        updateSliderInput(
+          inputId = ns("date_slider"),
+          min = min(temp_data$year, na.rm = T),
+          max = 2020,
+          value = c(min(temp_data$year, na.rm = T), max(temp_data$year, na.rm = T))
+        )
+        updateSelectInput(
+          inputId = ns("table_order"),
+          choices = colnames(temp_data)[3:length(colnames(temp_data))],
+          selected = "Month_Year"
+        )
+
+        temp_data$Average_Temperature <- as.numeric(temp_data$Average_Temperature)
+        
+        # validate(need(nrow(temp_data) > 0, "Please select a country."))
+        temp_data
+      })
+
+      selected_countries_iso <- reactive({
+
+         isoCodes <- world_data %>% filter(name_long %in% input$country)
+         isoCodes$iso_a2
+      })
+      
+      
+      output$temperature_table <- renderUI({
+        
+        data <- temperature_table_data()
+
+        if(!is.null(input$date_slider)){
+
+          # Make reactive
+          temp_data <- data %>% filter(
+            input$date_slider[1] <= year,
+            year <= input$date_slider[2]
+          )
+        }else{
+          temp_data <- data
+        }
+
+        if(!is.null(input$table_order)){
+
+          if(input$order_direction == "asc"){
+            temp_data <- temp_data %>% arrange(!!sym(input$table_order))
+          }else{
+            temp_data <- temp_data %>% arrange(desc(!!sym(input$table_order)))
+          }
+        }
+
+
+        datatable(
+          temp_data,
+          rownames = FALSE,
+          escape = F,
+          selection = "none",
+          options = list(ordering=F,
+                         columnDefs = list(list(visible=FALSE, targets=c(0,1)))
+          )
+
+        )
+
+      })
+
+    }
+  )
+}

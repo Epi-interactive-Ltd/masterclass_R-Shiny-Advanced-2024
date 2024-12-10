@@ -1,0 +1,169 @@
+
+shinyServer(function(input, output) {
+  
+  filtered_data <- reactive({
+    
+    if(input$country != "All"){
+      data <- world_data %>% filter(
+        name_long %in% input$country
+      )
+    }else if(input$subregion != "All"){
+      data <- world_data %>% filter(
+        subregion %in% input$subregion
+      )
+    }else if(input$region != "All"){
+      data <- world_data %>% filter(
+        region_un %in% input$region
+      )     
+    }else{
+      data <- world_data 
+    }
+    
+    
+  })
+  
+
+# update select inputs ----------------------------------------------------
+
+  
+  
+  observeEvent(input$region, {
+    sub_regions <- world_data %>% filter(
+      region_un %in% input$region
+    ) %>% select(subregion)
+    
+    updateSelectInput(inputId="subregion",
+                      choices=c("All", unique(sub_regions$subregion))
+    )
+  })
+  
+  observeEvent(input$subregion, {
+    countries <- world_data %>% filter(
+      subregion %in% input$subregion
+    ) %>% select(name_long)
+    
+    updateSelectInput(inputId="country",
+                      choices=c("All", unique(countries$name_long)))
+  })
+  
+
+# Chart stuff -------------------------------------------------------------
+
+  
+  output$world_data_chart <- renderPlotly({
+    
+    data <- filtered_data() %>% 
+      group_by(subregion) %>% 
+      summarise(
+        avgLifeExp = mean(lifeExp, na.rm = T),
+        avgGdpPercap = mean(gdpPercap, na.rm = T)
+      ) %>%
+      st_drop_geometry()
+    
+    y_theme <- list(
+      title = list(
+        text = "Life Expp",
+        standoff = 15
+      ),
+      ticklen = 15,
+      showline = T
+    )
+    
+    x_theme <- list(
+      title = list(
+        text = "Subregion",
+        standoff = 10
+      ),
+      showgrid = F,
+      tickangle = 90,
+      showline = T
+    )
+    
+    # create the legend customisation list
+    legend_theme <- list(
+      font = list( 
+        family = "sans-serif",
+        size = 10,
+        color = "#000"),
+      bgcolor = "#F5F5F5",
+      bordercolor = "#000",
+      borderwidth = 1,
+      yanchor="top",
+      y=0.99,
+      xanchor="left",
+      x=1.11
+    )
+    
+    chart_colours <- RColorBrewer::brewer.pal(n = length(unique(data$subregion)),
+                                                name = "Paired")   
+    
+    gdp_hover <- 'Average GDP per cap for <b>%{x}:</b> %{y}<extra></extra>'
+    
+    fig <- plot_ly(
+      data = data,
+      x = ~subregion,
+      y = ~avgGdpPercap,
+      type = "bar",
+      colors = chart_colours,
+      color = ~subregion,
+      hovertemplate = gdp_hover
+    )
+    
+    
+    
+    fig <- fig %>% layout(
+      xaxis = x_theme,
+      yaxis = y_theme,
+      legend = legend_theme
+    )
+    fig
+  })
+  
+
+# Table stuff -------------------------------------------------------------
+
+  
+  output$table <- renderDataTable({ 
+    
+    data <- filtered_data() %>% select(
+      "Region" = "region_un",
+      "Subregion" = "subregion",
+      "Country" = "name_long",
+      "Life Expectancy" = "lifeExp",
+      "GDP Per cap" = "gdpPercap"
+    ) %>%
+      st_drop_geometry()
+    
+    datatable(
+      data,
+      rownames = FALSE,
+      colnames = names(data),
+      escape = F,
+      selection = "none"
+    )
+    
+  })
+  
+  output$export <- downloadHandler(
+    filename = function() {
+      return("filtered_world_data.csv")
+    },
+    content = function(file) {
+      
+      
+      data <- filtered_data() %>% select(
+        iso_a2, region_un, subregion, name_long, lifeExp, gdpPercap
+      )
+      
+      write.csv(data, file = file, row.names = F)
+    }
+  )
+  
+
+# ui outputs for exercise -------------------------------------------------
+
+  
+  
+  
+  
+})

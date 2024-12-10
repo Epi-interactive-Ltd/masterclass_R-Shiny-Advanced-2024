@@ -1,0 +1,4 @@
+
+# create a .env file (using .env.example as a template) and populate the connection details to the database
+# Load the .env file in global.R using readRenviron()
+# Use the environment variables with Sys.getenv() to create a db connection

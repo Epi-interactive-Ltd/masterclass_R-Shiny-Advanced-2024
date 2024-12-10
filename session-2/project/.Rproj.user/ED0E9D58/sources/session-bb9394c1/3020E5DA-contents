@@ -1,0 +1,56 @@
+server <- function(input, output) {
+ 
+  votes <- reactiveValues(sealionCount = 0, puffinCount = 0, lambCount = 0, horseCount = 0 )
+  
+  winner <- reactiveVal(NULL)
+  
+  output$images <- renderUI({
+    tagList(
+        img(src = "sea_lion.jpg", height = "300px"),
+        img(src = "puffin.jpg", height = "300px"),
+        img(src = "lamb.jpg", height = "300px"),
+        img(src = "horses.jpg", height = "300px")
+    )
+  })
+   
+  observeEvent(input$sealion, {
+    votes$sealionCount <- votes$sealionCount + 1
+  })
+  
+  observeEvent(input$puffin, {
+    votes$puffinCount <- votes$puffinCount + 1
+  })
+  
+  observeEvent(input$lamb, {
+    votes$lambCount <- votes$lambCount + 1
+  })
+  
+  observeEvent(input$horse, {
+    votes$horseCount <- votes$horseCount + 1
+  })
+  reults <- reactive({
+    tagList(p("sealion:", votes$sealionCount),
+            p("puffin:",votes$puffinCount),
+            p("lamb:",votes$lambCount),
+            p("horse:",votes$horseCount))
+  })
+  
+  totalVotes <- eventReactive(list(input$submit, input$reset),{
+    reults()
+  })
+  
+  output$liveDisplay <- renderUI({
+    reults()
+  })
+  
+  output$finalDisplay <- renderUI({
+    totalVotes()
+  })
+  
+  observeEvent(input$reset, {
+    votes$sealionCount <- 0
+    votes$puffinCount <- 0
+    votes$lambCount<- 0
+    votes$horseCount<- 0
+  }, priority = 1)
+}

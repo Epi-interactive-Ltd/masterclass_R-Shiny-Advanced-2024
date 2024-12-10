@@ -1,0 +1,35 @@
+country_card_ui <- function(id){
+  ns <- NS(id)
+  uiOutput(ns("country_card"))
+  
+}
+
+country_card_server <- function(id, current_country, country_votes){
+  moduleServer(
+    id,
+    function(input, output, session) {
+      ns <- session$ns
+      
+      output$country_card <- renderUI({
+                  
+          actionButton(
+            style = "padding: 0 !important;",
+            inputId = ns(paste0(current_country$iso_a2,"_button")),
+            label = lapply(paste0("<div class = 'country_card'><h5>", current_country$name_long, "</h5><p>", current_country$iso_a2, "</p><img class = 'country_flag' src='", current_country$flag, "'></div>"), HTML)
+          )
+      
+        
+      })
+      
+      observeEvent(input[[paste0(current_country$iso_a2,"_button")]], {
+        
+        country_votes[[current_country$name_long]] <- isolate(country_votes[[current_country$name_long]]) + 1
+        
+        # browser()
+      })
+      
+     
+      
+    }
+  )
+}

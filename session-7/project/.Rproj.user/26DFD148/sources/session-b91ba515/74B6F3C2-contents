@@ -1,0 +1,175 @@
+compare_country_ui <- function(id) {
+  ns <- NS(id)
+  tagList(
+    uiOutput(ns("compare")),
+    uiOutput(ns("countries"))    
+    
+  )
+  
+}
+
+
+compare_country_server <- function(id, data, inputs) {
+  moduleServer(
+    id,
+    # note the inclusion of the 'session' parameter to get module state information (namespace)
+    function(input, output, session) {
+      
+      ns <- session$ns
+      
+      country_list <- reactive({
+        data()
+        
+      }) %>%
+        bindCache(data())
+      
+      observeEvent(input$country_one, {
+        country <- data() %>% filter(
+          name_long %in% input$country_one
+        )
+        first_country(country)
+        
+      })
+      
+      observeEvent(input$country_two, {
+        country <- data() %>% filter(
+          name_long %in% input$country_two
+        )
+        second_country(country)
+      })
+      
+      first_country <- reactiveVal()
+
+      second_country <- reactiveVal()
+      
+      
+      # Create a reactive to store the filtered iso_a2 codes
+      filtered_countries <- reactive({
+        # browser()
+        sel_countries <- c(input$country_one, input$country_two)
+        countries <- data() %>% filter (name_long %in% sel_countries)
+        return(countries$iso_a2)
+      })
+      
+      temperature_data <- reactive({
+        req(filtered_countries())
+        
+        # when the filtered countries change, we fetch the records from the db using getCountries
+        temp_data <- getCountries(filtered_countries(), inputs()$year)
+        temp_data <- as.data.frame(temp_data)
+        
+        temp_data$avg_monthly_temp <- as.numeric(temp_data$avg_monthly_temp)
+        
+        return(temp_data)
+      }) %>%
+        bindCache(inputs()$year, filtered_countries())
+      
+      output$data_output <- renderUI({
+        if(input$plot_select == "avg_monthly_temp"){
+          # Display a line plot
+           ele <- plotlyOutput(ns("compare_plot"))
+        }else{
+          ele <- plotlyOutput(ns("compare_table"))
+        }
+        return(div(ele))
+      })
+      
+      output$compare_table <- renderPlotly({
+        
+        
+        if(first_country()$name_long != second_country()$name_long){
+          country_data <- first_country()
+          country_data[2, ] <- second_country()
+        }else{
+          country_data <- first_country()
+        }
+        names_map <- c("pop" = "Population", "lifeExp" = "Life Expectancy", "gdpPercap" = "GDP Per cap", "popDensity" = "Population Density", "area_km2" = "Area km2")
+        fig <- generate_compare_plot(as.data.frame(country_data), plot_label = names_map[[input$plot_select]], plot_id = input$plot_select)
+        # browser()
+        return(fig)
+      })
+      
+      output$compare_plot <- renderPlotly({
+        
+        validate(need(nrow(temperature_data()) > 0, "Selected Country(ies) have no temperature data."))
+        
+        fig <- generate_temperature_plot(temperature_data())
+        fig
+        
+      })
+      
+      
+      output$compare <- renderUI ({
+        req(country_list())
+        tagList(
+          div(
+            class = "row",
+            div(
+              class = "col-6",
+              wellPanel(
+                selectInput(
+                  inputId = ns("country_one"),
+                  label = "Country One:",
+                  choices = country_list()$name_long,
+                  selected = ifelse(length(country_list()$name_long) > 0,  country_list()$name_long[1], "")
+                )
+              )
+            ),
+            div(
+              class = "col-6",
+              wellPanel(
+                selectInput(
+                  inputId = ns("country_two"),
+                  label = "Country Two:",
+                  choices = unique(country_list()$name_long),
+                  selected = ifelse(length(country_list()$name_long) > 1,  country_list()$name_long[2], country_list()$name_long[1])
+                )
+              )
+            )
+            
+          ),
+          div(
+            class = "row",
+            wellPanel(
+              selectInput(
+                inputId = ns("plot_select"),
+                label = "Plot to compare: ",
+                choices = c("Average Monthly Temperature" = "avg_monthly_temp", "Population" = "pop", "Life Expectancy" = "lifeExp", "GDP Per cap" = "gdpPercap", "Population Density" = "popDensity", "Area km2" = "area_km2")
+              ),
+              
+            )
+          ),
+          uiOutput(ns("data_output"))
+          
+          
+        )
+      })
+      
+      
+      
+      
+      
+      output$countries <- renderUI({
+        req(first_country())
+        tagList(
+          div(
+            class = "row",
+            div(
+              class = "col-6",
+              wellPanel(
+                compare_country(first_country)
+              )
+            ),
+            div(
+              class = "col-6",
+              wellPanel(
+                compare_country(second_country)
+              )
+            )
+          )
+        )
+      })
+      
+    }
+  )
+}

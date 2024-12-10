@@ -1,0 +1,56 @@
+---
+title: "R Shiny Advanced Masterclass"
+author: "Epi-interactive"
+date: "21/03/2024"
+output: pdf_document
+always_allow_html: true
+---
+
+### Course:
+
+```{r setup}
+#| include: false
+library(knitr)
+library(dplyr)
+source("src/util.R")
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Session 7
+
+---
+
+This exercise will allow you to practise the use of Quarto, integrating Quarto with R / R Shiny code, and exporting a PDF from an Quarto Markdown document through a Shiny application.
+
+In separate paragraphs below, please insert the Quarto Markdown text described in the exercise. Feel free to include more additions to this content:
+
+<!-- Please fill in your Quarto Markdown text here: -->
+### Name: 
+
+* **Occupation:** Full-stack developer 
+* **Company:** Epi-interactive
+* [Contact me: _nick@epi-interactive.com_](mailto:nick@epi-interactive.com)
+
+<!-- Insert inline R code for the date here -->
+
+Today's date: `r Sys.Date()`
+
+---
+
+### Mtcars - Plot
+
+In the space below, please use an R code block to recreate the chart shown on the Shiny application side.
+
+<!-- Please insert your R code block for the plot here -->
+
+
+### Mtcars - table
+
+In the space below, please use an R code block to present the table shown on the Shiny application side.
+
+<!-- Please insert your R code block for the table here -->
+
+
+<!-- Please insert the table subtitle here using inline R code -->
+
+Caption:

@@ -1,0 +1,133 @@
+---
+title: "Quarto Masterclass"
+author: "Epi-interactive"
+date: "11/12/2024"
+output: pdf_document
+always_allow_html: true
+params:
+  filters: NA
+  world_data: NA
+  temp_data: NA
+---
+
+```{r setup}
+#| include: false
+#| warning: false
+#| error: false
+
+# Source calls
+library(knitr)
+library(dplyr)
+library(plotly)
+library(sf)
+source("src/util.R")
+knitr::opts_chunk$set(echo = TRUE)
+
+# Inputs
+world_data <- as.data.frame(params$world_data) %>% 
+  mutate(gdpPercap = as.numeric(gdpPercap),
+         lifeExp = as.numeric(lifeExp))
+filters <- params$filters
+
+# Filtered data
+filtered_data <- world_data %>% filter(
+  name_long %in% filters$country
+)
+        
+filtered_data <- filtered_data %>%
+  filter(between(gdpPercap, filters$gdp[1], filters$gdp[2]))
+
+# Summary data
+world_summary <- summary_points(world_data)
+filtered_summary <- summary_points(filtered_data)
+
+# Temp data
+temp_data <- as.data.frame(params$temp_data)
+has_temp_data <- nrow(temp_data) > 0
+
+```
+
+## Session 6
+
+------------------------------------------------------------------------
+
+This exercise will allow you to practise the use of Quarto, integrating Quarto with R / R Shiny code, and exporting a PDF from an Quarto Markdown document through a Shiny application.
+
+In separate paragraphs below, please insert the Quarto Markdown text described in the exercise. Feel free to include more additions to this content:
+
+Today's date: `r Sys.Date()`
+
+### Selected filters
+
+-   **Region:** `r filters$region`
+-   **Sub region:** `r filters$subregion`
+<!--use page to display countries correctly-->
+-   **Countries:** `r paste(filters$country, sep = ", ", collapse = ", ")`
+
+### Unfiltered data
+
+* `r world_summary$nrows`
+* `r world_summary$area`
+* `r world_summary$pop`
+
+
+### Filtered data
+
+* `r filtered_summary$nrows`
+* `r filtered_summary$area`
+* `r filtered_summary$pop`
+
+### Subregion chart
+
+``` {r chart}
+#| echo: false
+#| output: true
+#| warning: false
+#| error: false
+
+    plot <- generate_subregion_plot(filtered_data, isGGplot = T)
+
+    plot
+```
+
+### Country table
+
+``` {r table}
+#| echo: false
+#| output: true
+
+    data <- filtered_data  %>%
+          mutate(
+            life_exp_status = as.character(lifeExp >= 65)
+          ) %>%
+          select(
+            "Region" = "region_un",
+            "Subregion" = "subregion",
+            "Country" = "name_long",
+            "Life Expectancy" = "lifeExp",
+            "GDP Per Capita" = "gdpPercap",
+            "Life Exp Status" = "life_exp_status"
+          )
+
+    kable(data)
+```
+
+### Temperature chart
+
+``` {r temp_chart}
+#| echo: false
+#| output: true
+
+  # Only display plot if temperature data is available
+  if(has_temp_data) {
+    plot <- generate_temperature_plot(temp_data) + 
+      theme(legend.position="none") # remove legend to avoid covering plot
+    plot
+    
+  } else {
+    # display warning message if no data
+    cat("no temperature data available")
+  }
+
+
+```

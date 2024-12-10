@@ -1,0 +1,5 @@
+server <- function(input, output) {
+  
+  votes <- reactiveValues(sealionCount = 0, puffinCount = 0, lambCount = 0, horseCount = 0 )
+  
+}

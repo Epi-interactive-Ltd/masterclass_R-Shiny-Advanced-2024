@@ -1,0 +1,15 @@
+
+.well {
+  margin: 15px 0;
+}
+
+.col.img-col {
+    display: flex;
+    justify-content: center;
+}
+
+.img-col img {
+    border: 1px solid black;
+    height: auto;
+    max-height: 300px;
+}

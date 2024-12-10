@@ -1,0 +1,26 @@
+{
+    "id": "589100D1",
+    "path": "/cloud/project/challenge/ui.R",
+    "project_path": "challenge/ui.R",
+    "type": "r_source",
+    "hash": "676642715",
+    "contents": "",
+    "dirty": false,
+    "created": 1679526334615.0,
+    "source_on_save": false,
+    "relative_order": 3,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "18,5",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1679526778,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1679526778600,
+    "read_only": false,
+    "read_only_alternatives": []
+}

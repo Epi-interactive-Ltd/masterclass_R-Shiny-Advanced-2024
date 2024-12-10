@@ -1,0 +1,89 @@
+temperature_page_ui <- function(id){
+  ns <- NS(id)
+  
+  wellPanel(
+    dataTableOutput(ns("temperature_table"))
+  )
+  
+}
+
+temperature_page_server <- function(id, filtered_data, temperature_filters) {
+  
+  moduleServer(
+    id,
+    function(input, output, session) {
+      ns <- session$ns
+      
+      # Create a reactive to store the filtered iso_a2 codes
+      # filtered_countries <- reactive({
+      #   unique(filtered_data()$iso_a2)
+      # })
+      
+      
+      # country_data <- reactive({
+      #   req(filtered_countries())
+      #   
+      #   sel_countries <- filtered_countries()
+      #   
+      #   # when the filtered countries change, we fetch the records from the db using getCountries
+      #   temp_data <- getCountries(sel_countries)
+      #   temp_data <- as.data.frame(temp_data)
+      #   
+      #   return(temp_data)
+      # }) %>%
+      #   bindCache(filtered_countries())
+      
+      
+      # Create a reactive to store the filtered world_temp_data
+      # temperature_data <- reactive({
+      #   
+      #     # retrieve the country data from a reactive to minimise DB queries
+      #     temp_data <- country_data()
+      # 
+      #     temp_data$avg_monthly_temp <- as.numeric(temp_data$avg_monthly_temp)
+      #     
+      #     # only filter the data by year if there are year filters available
+      #     if(!is.null(temperature_filters()$years)){
+      #       temp_data <- temp_data %>% filter(
+      #         between(year, 
+      #                 temperature_filters()$years[1], 
+      #                 temperature_filters()$years[2])
+      #       )
+      #     }
+      #     
+      #     return(temp_data)
+      # }) %>%
+      #   bindCache(temperature_filters()$years, filtered_countries())
+      
+      
+      
+      # output$temperature_table <- renderDataTable({
+      #   cc <- temperature_filters()
+      #   
+      #   # use the temperature_data to fill in the table
+      #   temp_data <- temperature_data()
+      #   
+      #   if(!is.null(temperature_filters()$order)){
+      # 
+      #     if(temperature_filters()$direction == "asc"){
+      #       temp_data <- temp_data %>% arrange(!!sym(temperature_filters()$order))
+      #     }else{
+      #       temp_data <- temp_data %>% arrange(desc(!!sym(temperature_filters()$order)))
+      #     }
+      #   }
+      # 
+      #   datatable(
+      #     temp_data,
+      #     rownames = FALSE,
+      #     escape = F,
+      #     selection = "none",
+      #     options = list(ordering=F,
+      #                    columnDefs = list(list(visible=FALSE, targets=c(0,1)))
+      #     )
+      #     
+      # 
+      #   )
+      # })
+    }
+  )
+}

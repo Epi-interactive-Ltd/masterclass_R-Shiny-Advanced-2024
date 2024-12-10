@@ -1,0 +1,53 @@
+
+quarto_module_ui <- function(id) {
+    
+    ns <- NS(id)
+    
+    uiOutput(ns("pdfButton"))
+
+}
+
+
+quarto_module_server <- function(id, filtered_data, filter_inputs, temperature_data) {
+    
+    moduleServer(
+        id, 
+        function(input, output, session) {
+            
+            ns <- session$ns
+            
+            
+            output$pdfButton <- renderUI({
+                # Force pdf button to only display if there is filtered data
+                req(filtered_data())
+                
+                wellPanel(
+                    downloadButton(ns("downloadPDF"), "Download Quarto Markdown Report")
+                )
+            })
+            
+            # output$downloadPDF <- downloadHandler(
+            #     filename = function() {
+            #         # returned file name
+            #         return("Masterclass_Quarto_Report.pdf")
+            #     },
+            #     content = function(file) {
+            #         # render quarto file to local file 'report.pdf'
+            #         quarto::quarto_render(input = "report.qmd",
+            #                               execute_params = list(
+            #                                   filters = filter_inputs(),
+            #                                   world_data = world_data,
+            #                                   temp_data = temperature_data()
+            #                               ),
+            #                               output_file = "report.pdf",
+            #                               output_format = "pdf"
+            #         )
+            #         
+            #         # return local file 'report.pdf'
+            #         file.copy("report.pdf", file)
+            #     }
+            # )
+        }
+    )
+    
+}

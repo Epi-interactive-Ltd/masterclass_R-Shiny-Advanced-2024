@@ -1,0 +1,51 @@
+
+.well {
+  margin: 15px 0;
+}
+
+/* Small devices (landscape phones, below 576px)*/
+@media (max-width: 575px) {
+  
+}
+
+/* Small devices (landscape phones, 576px and up)*/
+@media (min-width: 576px) {
+  
+}
+
+/* Medium devices (tablets, 768px and up)*/
+@media (min-width: 768px) {
+  
+}
+
+/* Large devices (desktops, 992px and up)*/
+@media (min-width: 992px) {
+  
+}
+
+/* Extra large devices (large desktops, 1200px and up)*/
+@media (min-width: 1200px) {
+  
+}
+
+img{
+  width: auto;
+  height: 300px;
+}
+
+
+.country_card {
+  dispaly: flex;
+  flex-direction: column;
+  padding: 0 !important;
+}
+
+.country_card h5,
+.country_card p {
+  margin: 0;
+}
+
+.country_flag {
+  height: 100px;
+  width: auto;
+}

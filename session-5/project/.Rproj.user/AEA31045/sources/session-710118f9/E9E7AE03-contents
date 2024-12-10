@@ -1,0 +1,17 @@
+temperature_filters_ui <- function(id) {
+  ns <- NS(id)
+  
+}
+
+
+temperature_filters_server <- function(id, filtered_data) {
+  
+  moduleServer(
+    id,
+    function(input, output, session) {
+      ns <- session$ns
+      
+      
+    }
+  )
+}

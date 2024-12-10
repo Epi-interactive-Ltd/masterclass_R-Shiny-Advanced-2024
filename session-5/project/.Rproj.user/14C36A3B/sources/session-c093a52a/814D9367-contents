@@ -1,0 +1,89 @@
+server <- function(input, output, session) {
+ 
+  votes <- reactiveValues(sealionCount = 0, puffinCount = 0, lambCount = 0, horseCount = 0 )
+  
+  lastVote <- reactiveVal(character())
+  
+  countdown <- reactiveVal(10)
+  
+  countdownStopped <- reactiveVal(F)
+  
+  output$images <- renderUI({
+    tagList(
+        img(src = "sea_lion.jpg", height = "300px"),
+        img(src = "puffin.jpg", height = "300px"),
+        img(src = "lamb.jpg", height = "300px"),
+        img(src = "horses.jpg", height = "300px")
+    )
+  })
+   
+  observeEvent(input$sealion, {
+    votes$sealionCount <- votes$sealionCount + 1
+    lastVote("sealion")
+  })
+  
+  observeEvent(input$puffin, {
+    votes$puffinCount <- votes$puffinCount + 1
+    lastVote("puffin")
+  })
+  
+  observeEvent(input$lamb, {
+    votes$lambCount <- votes$lambCount + 1
+    lastVote("lamb")
+  })
+  
+  observeEvent(input$horse, {
+    votes$horseCount <- votes$horseCount + 1
+    lastVote("horse")
+  })
+  reults <- reactive({
+    tagList(p("sealion:", votes$sealionCount),
+            p("puffin:",votes$puffinCount),
+            p("lamb:",votes$lambCount),
+            p("horse:",votes$horseCount))
+  })
+  
+  totalVotes <- eventReactive(list(countdownStopped(), input$reset),{
+    reults()
+  })
+  
+  output$liveDisplay <- renderUI({
+    reults()
+  })
+  
+  output$finalDisplay <- renderUI({
+    totalVotes()
+  })
+  
+  observeEvent(input$reset, {
+    votes$sealionCount <- 0
+    votes$puffinCount <- 0
+    votes$lambCount<- 0
+    votes$horseCount<- 0
+    countdownStopped(F)
+    countdown(10)
+  }, priority = 1)
+  
+  observeEvent(input$undo, {
+    req(!is.null(lastVote()))
+    switch(lastVote(),
+           "sealion" = {votes$sealionCount <- votes$sealionCount - 1},
+           "puffin" = {votes$puffinCount <- votes$puffinCount - 1},
+           "lamb" = {votes$lambCount <- votes$lambCount - 1},
+           "horse" ={votes$horseCount <- votes$horseCount - 1})
+    lastVote(NULL)
+  })
+  
+  output$timer <- renderText(paste("Time remaining:",countdown()))
+  
+  observe({
+    if(!countdownStopped()){
+      if(isolate(countdown()) != 0 ){
+        invalidateLater(1000, session)
+        isolate(countdown(countdown() - 1))
+      }else{
+        countdownStopped(T)
+      }
+    }
+  })
+}

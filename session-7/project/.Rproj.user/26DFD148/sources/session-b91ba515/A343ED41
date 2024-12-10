@@ -1,0 +1,26 @@
+{
+    "id": "A343ED41",
+    "path": "/cloud/project/result/src/quarto-module.R",
+    "project_path": "result/src/quarto-module.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1711331272183.0,
+    "source_on_save": false,
+    "relative_order": 6,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "50,8",
+        "scrollLine": "47"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1711343114,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1711343114180,
+    "read_only": false,
+    "read_only_alternatives": []
+}

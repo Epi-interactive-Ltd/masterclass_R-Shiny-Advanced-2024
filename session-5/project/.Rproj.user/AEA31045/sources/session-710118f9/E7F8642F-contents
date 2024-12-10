@@ -1,0 +1,68 @@
+temperature_page_ui <- function(id){
+  ns <- NS(id)
+  div(
+    fluidRow(
+     div(
+       class = "col-3",
+       wellPanel(
+         temperature_filters_ui(ns("temperature_filter")) 
+       )
+     ),
+     div(
+       class = "col-9",
+       wellPanel(
+         uiOutput("temperature_table")
+       )
+     )
+    )
+  )
+}
+
+temperature_page_server <- function(id, filtered_data) {
+  
+  moduleServer(
+    id,
+    function(input, output, session) {
+      ns <- session$ns
+      
+      output$temp_table <- renderUI({
+        
+        data <- temp_table_data()
+        
+        if(!is.null(input$date_slider)){
+          
+          # Make reactive
+          temp_data <- data %>% filter(
+            input$date_slider[1] <= year,
+            year <= input$date_slider[2]
+          )
+        }else{
+          temp_data <- data
+        }
+        
+        if(!is.null(input$table_order)){
+          
+          if(input$order_direction == "asc"){
+            temp_data <- temp_data %>% arrange(!!sym(input$table_order))
+          }else{
+            temp_data <- temp_data %>% arrange(desc(!!sym(input$table_order)))
+          }
+        }
+        
+        
+        datatable(
+          temp_data,
+          rownames = FALSE,
+          escape = F,
+          selection = "none",
+          options = list(ordering=F,
+                         columnDefs = list(list(visible=FALSE, targets=c(0,1)))
+          )
+          
+        )
+        
+      })
+      
+    }
+  )
+}

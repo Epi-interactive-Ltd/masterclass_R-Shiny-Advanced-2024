@@ -1,0 +1,18 @@
+
+
+bootstrapPage(
+  tagList(
+    tags$link(rel = "stylesheet", type = "text/css", href = "css/custom.css")
+  ),
+  
+  h1("Session 1 Challenge"),
+  fluidRow(
+           div(class = "col-sm 6 col-md-4 offset-md-4 col-lg-3",
+                  uiOutput("controls")
+           ),
+           
+           div(class = "col-sm 6 col-md-6 offset-md-2 col-lg-9", 
+                  uiOutput("content")
+           ),
+  )
+)

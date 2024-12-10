@@ -1,0 +1,26 @@
+{
+    "id": "C6347BE4",
+    "path": "/cloud/project/stage1/server.R",
+    "project_path": "stage1/server.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1710271268396.0,
+    "source_on_save": false,
+    "relative_order": 3,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "9,17",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1710271483,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1710271483531,
+    "read_only": false,
+    "read_only_alternatives": []
+}

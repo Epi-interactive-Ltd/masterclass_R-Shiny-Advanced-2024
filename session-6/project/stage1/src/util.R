@@ -1,0 +1,116 @@
+generate_subregion_plot <- function(data, isGGplot = F) {
+    data <- data %>% 
+        group_by(subregion) %>% 
+        summarise(
+            avgLifeExp = mean(lifeExp, na.rm = T),
+            avgGdpPercap = mean(gdpPercap, na.rm = T)
+        ) %>%
+        st_drop_geometry()
+    
+    # color brewer requires n >= 3 and returns minimum 3 values, n value given minimum to avoid warning case
+    chart_colours <- RColorBrewer::brewer.pal(n = max(3,length(unique(data$subregion))),
+                                              name = "Paired")   
+
+    if(isGGplot) {
+      # Handles plot generation if expects a ggplot format
+      # required for quarto pdfs as plotly won't display correctly 
+      
+      #Get required number of colors
+      chart_colours <- chart_colours[1:length(unique(data$subregion))]
+      
+      # Get plot
+      fig <- ggplot(data, aes(x=subregion, y=avgGdpPercap)) + 
+        geom_bar(stat = "identity", fill = chart_colours) +
+        xlab("Subregion") + 
+        ylab("Life Expp")
+      
+      return(fig)
+    }
+    
+    # Plotly styling
+    y_theme <- list(
+      title = list(
+        text = "Life Expp",
+        standoff = 15
+      ),
+      ticklen = 15,
+      showline = T
+    )
+    
+    x_theme <- list(
+      title = list(
+        text = "Subregion",
+        standoff = 10
+      ),
+      showgrid = F,
+      tickangle = 90,
+      showline = T
+    )
+    
+    # create the legend customisation list
+    legend_theme <- list(
+      font = list( 
+        family = "sans-serif",
+        size = 10,
+        color = "#000"),
+      bgcolor = "#F5F5F5",
+      bordercolor = "#000",
+      borderwidth = 1,
+      yanchor="top",
+      y=0.99,
+      xanchor="left",
+      x=1.11
+    )
+    
+    gdp_hover <- 'Average GDP per cap for <b>%{x}:</b> %{y}<extra></extra>'
+    
+    # Generate plotly plot
+    fig <- plot_ly(
+        data = data,
+        x = ~subregion,
+        y = ~avgGdpPercap,
+        type = "bar",
+        colors = chart_colours,
+        color = ~subregion,
+        hovertemplate = gdp_hover
+    )
+    
+    fig <- fig %>% layout(
+        xaxis = x_theme,
+        yaxis = y_theme,
+        legend = legend_theme
+    )
+    return(fig)
+}
+
+generate_temperature_plot <- function(temp_data) {
+  # Combine temperature data
+  temp_data <- temp_data %>% mutate(avg_monthly_temp = as.numeric(sprintf("%.2f", avg_monthly_temp)))
+  temp_data <- temp_data %>% mutate(
+    date = format(as.Date(paste0("01-", sprintf("%02d", month), "-", year), format = "%d-%m-%Y"), format="%m-%Y"),
+    full_date = as.Date(paste0("01-", sprintf("%02d", month), "-", year), format = "%d-%m-%Y"),
+  ) %>% group_by(city, country, region) #%>%
+    # arrange(date)
+  
+  # Generate line plot
+  fig <- ggplot(temp_data,
+                aes(
+                  x = full_date,
+                  y = avg_monthly_temp,
+                  color = city
+                )) +
+    geom_line(stat = "identity") + 
+    theme(
+      axis.text.x = element_text(angle = 90)
+    ) +
+    scale_x_date(date_labels = "%b %Y")
+}
+
+summary_points <- function(data) {
+  # generates list of summary points
+  list(
+    nrows = sprintf("Number of rows: %s", nrow(data)),
+    area = sprintf("Total Area: %.2f sq. km", sum(as.numeric(data$area_km2))),
+    pop = sprintf("Total Population: %.2f", sum(as.numeric(data$pop), na.rm = T))
+  )
+}

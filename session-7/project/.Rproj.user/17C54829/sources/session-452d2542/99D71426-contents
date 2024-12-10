@@ -1,0 +1,85 @@
+---
+title: "R Shiny Advanced Masterclass"
+author: "Epi-interactive"
+date: "03/21/2024"
+output: pdf_document
+always_allow_html: true
+params:
+  filters: NA
+  dat: NA
+  world_summary: NA
+---
+
+```{r setup}
+#| include: false
+#| warning: false
+#| error: false
+library(knitr)
+library(dplyr)
+library(plotly)
+library(sf)
+source("src/util.R")
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Session 6
+
+------------------------------------------------------------------------
+
+This exercise will allow you to practise the use of Quarto, integrating Quarto with R / R Shiny code, and exporting a PDF from an Quarto Markdown document through a Shiny application.
+
+In separate paragraphs below, please insert the Quarto Markdown text described in the exercise. Feel free to include more additions to this content:
+
+Today's date: `r Sys.Date()`
+
+### Selected filters
+
+-   **Region:** `r (params$filters)$region`
+-   **Sub region:** `r (params$filters)$subregion`
+-   **Countries:** `r paste((params$filters)$country, sep = ", ", collapse = ", ")`
+
+### Unfiltered data
+
+* `r params$world_summary$nrows`
+* `r params$world_summary$area`
+* `r params$world_summary$pop`
+
+
+### Filtered data
+
+* `r sprintf("Number of rows: %s", nrow(as.data.frame(params$dat)))`
+* `r sprintf("Total Area: %.2f sq. km", sum(params$dat$area_km2))`
+* `r sprintf("Total Population: %.2f", sum(params$dat$pop, na.rm = T))`
+
+### Chart
+
+``` {r chart}
+#| echo: false
+#| output: true
+    data <- as.data.frame(params$dat)
+    plot <- generate_plot(data, isGGplot = T)
+
+    plot
+```
+
+### Table
+
+``` {r table}
+#| echo: false
+#| output: true
+
+    data <- as.data.frame(params$dat) %>% 
+          mutate(
+            life_exp_status = as.character(lifeExp >= 65)
+          ) %>%
+          select(
+            "Region" = "region_un",
+            "Subregion" = "subregion",
+            "Country" = "name_long",
+            "Life Expectancy" = "lifeExp",
+            "GDP Per Capita" = "gdpPercap",
+            "life_exp_status"
+          )
+
+    kable(data)
+```

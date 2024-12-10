@@ -1,0 +1,99 @@
+---
+title: "R Shiny Advanced Masterclass"
+author: "Epi-interactive"
+date: "11/12/2024"
+output: pdf_document
+always_allow_html: true
+# parameters go here
+---
+
+```{r setup}
+#| include: false
+#| warning: false
+#| error: false
+
+# Source calls
+library(knitr)
+library(dplyr)
+library(plotly)
+library(sf)
+source("src/util.R")
+knitr::opts_chunk$set(echo = TRUE)
+
+# Inputs
+world_data <- as.data.frame(params$world_data) %>% 
+  mutate(gdpPercap = as.numeric(gdpPercap),
+         lifeExp = as.numeric(lifeExp))
+filters <- params$filters
+
+# Filtered data
+filtered_data <- world_data %>% filter(
+  name_long %in% filters$country
+)
+        
+filtered_data <- filtered_data %>%
+  filter(between(gdpPercap, filters$gdp[1], filters$gdp[2]))
+
+# Summary data
+world_summary <- summary_points(world_data)
+filtered_summary <- summary_points(filtered_data)
+
+# Temp data
+temp_data <- as.data.frame(params$temp_data)
+has_temp_data <- nrow(temp_data) > 0
+
+```
+
+## Session 6
+
+------------------------------------------------------------------------
+
+This exercise will allow you to practise the use of Quarto, integrating Quarto with R / R Shiny code, and exporting a PDF from an Quarto Markdown document through a Shiny application.
+
+In separate paragraphs below, please insert the Quarto Markdown text described in the exercise. Feel free to include more additions to this content:
+
+Today's date: `r Sys.Date()`
+
+### Selected filters
+
+
+
+### Unfiltered data
+
+
+
+
+### Filtered data
+
+
+
+### Subregion chart
+
+``` {r chart}
+#| echo: false
+#| output: true
+#| warning: false
+#| error: false
+
+
+```
+
+### Country table
+
+``` {r table}
+#| echo: false
+#| output: true
+
+
+```
+
+### Temperature chart
+
+``` {r temp_chart}
+#| echo: false
+#| output: true
+
+
+
+
+```

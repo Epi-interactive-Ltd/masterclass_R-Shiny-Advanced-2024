@@ -1,0 +1,29 @@
+
+
+shinyServer(function(input, output, session) {
+  
+  
+  output$controls <- renderUI({
+    selectInput("table", "Select table", choices = c("Nile", "Islands"))
+  })
+  
+  
+  output$tableTitle <- renderUI({
+    req(!is.null(input$table))
+    
+    h3(input$table)
+  })
+  
+  output$mainTable <- renderPlot({
+    req(!is.null(input$table))
+
+    if(input$table == "Nile") {
+      return(plot(Nile))
+    }
+    else {
+      return(plot(islands))
+    }
+  })
+  
+  
+})

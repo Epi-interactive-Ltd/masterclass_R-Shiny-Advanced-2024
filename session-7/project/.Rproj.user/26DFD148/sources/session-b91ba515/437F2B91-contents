@@ -1,0 +1,90 @@
+country_vote_page_ui <- function(id){
+  ns <- NS(id)
+  
+  tagList(
+    div(class = "row",
+        
+          wellPanel(
+      uiOutput(ns("flagImages"))
+          )
+        
+    ),
+    uiOutput(ns("country_vote_div")),
+    div(class = "row",
+      wellPanel(
+        shinyjs::disabled(actionButton(
+          inputId = ns("check_votes"),
+          label = "Check votes"
+        ))
+      )
+    )
+  )
+}
+
+
+country_vote_page_server <- function(id, filtered_data){
+  moduleServer(
+    id,
+    function(input, output, session) {
+      ns <- session$ns
+      hide("country_vote_div")
+      
+      
+      country_votes <- reactiveValues()
+      
+      current_votes <- reactiveVal({NULL})
+      
+      data <- reactive({
+        
+        
+        if(nrow(filtered_data()) <= 0) {
+          shinyjs::disable("check_votes")
+        } else {
+          shinyjs::enable("check_votes")
+        }
+        
+        return(filtered_data())
+        })
+      
+      output$country_vote_div <- renderUI({
+        div(class = "row",
+            wellPanel(
+              plotlyOutput(ns("country_vote_plot"))
+            )
+        )
+      })
+      
+      output$flagImages <- renderUI({
+        
+          div(style = "display: flex; flex-direction: row; flex-wrap: wrap;",
+              lapply(1:nrow(data()), function(i) {
+                
+                country_votes[[data()[i,]$name_long]] <- 0
+                country_card_server(paste0("countryCard", data()[i,]$name_long), data()[i,], country_votes)
+  
+                
+                  country_card_ui(ns(paste0("countryCard", data()[i,]$name_long)))
+              })
+        )
+      })
+      
+      output$country_vote_plot <- renderPlotly({
+
+        fig <- generate_country_vote_plot(current_votes())
+        fig
+        
+      })
+      
+      
+      observeEvent(input$check_votes, {
+        
+        cc <- reactiveValuesToList(isolate(country_votes))
+        
+        current_votes(cc)
+        show("country_vote_div")
+        
+      }, ignoreInit = T)
+      
+    }
+  )
+}

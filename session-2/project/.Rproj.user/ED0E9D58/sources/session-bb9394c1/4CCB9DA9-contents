@@ -1,0 +1,32 @@
+library(shiny)
+
+shinyUI(
+  fluidPage(
+    h2("Vote for your favourite!"),
+    wellPanel(
+     uiOutput("images")
+    ),
+    wellPanel(
+      actionButton("sealion", "Sea lion"),
+      actionButton("puffin", "Puffin"),
+      actionButton("lamb", "Lamb"),
+      actionButton("horse", "Horse")
+    ),
+    wellPanel(
+      actionButton("submit", "Reveal votes"),
+      actionButton("reset", "Reset")
+    ),
+    wellPanel(
+      
+      fluidRow(
+        column(3, tags$b("Live results"),
+               uiOutput("liveDisplay")
+        ),
+        column(3, tags$b("Final results"),
+               uiOutput("finalDisplay")
+        )
+        
+      )
+    )
+  )
+)

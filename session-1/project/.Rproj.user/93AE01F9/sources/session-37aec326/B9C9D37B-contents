@@ -1,0 +1,49 @@
+fluidPage(
+  tags$head(
+    tags$link(rel = "stylesheet", type = "text/css", href = "main.css")
+  ),
+  titlePanel("Bootstrap Extensions"),
+  sidebarLayout(
+    sidebarPanel(
+      h2("Filter:"),
+      
+      selectInput(
+        inputId = "region",
+        label = "Select Region:",
+        choices = c("All", unique(world_data$region_un)),
+        selected = "All",
+        multiple = F
+      ),
+      
+      conditionalPanel(
+        condition = 'input.region != "All"',
+        
+        selectInput(
+          inputId = "subregion",
+          label = "Select Subregion:",
+          choices = NULL,
+          multiple = F
+        ),
+        
+        conditionalPanel(
+          condition = 'input.subregion != "All"',
+          
+          selectInput(
+            inputId = "country",
+            label = "Select Country:",
+            choices = NULL,
+            multiple = F
+          ),
+        )
+        
+      ),
+      
+    ),
+    
+    mainPanel(tabsetPanel(
+      tabPanel(
+        title = "Chart",
+        wellPanel(plotlyOutput("world_data_chart"))
+      )
+    ))
+  ))

@@ -1,0 +1,22 @@
+
+
+bootstrapPage(
+  fluidPage(
+    theme = bslib::bs_theme(version = 5),
+    tagList(
+      tags$link(rel = "stylesheet", type = "text/css", href = "css/custom.css")
+    ),
+    
+    h1("Session 1 Challenge"),
+    fluidRow(
+      div(class = "col-3",
+          "BOO",
+          uiOutput("controls")
+      ),
+      
+      column(9,
+             uiOutput("content")
+      )
+    )
+  )
+)

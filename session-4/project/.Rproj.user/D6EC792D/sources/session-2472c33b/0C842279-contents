@@ -1,0 +1,27 @@
+
+
+shinyServer(function(input, output, session) {
+  
+  output$controls <- renderUI({
+    
+  })
+  
+  
+  output$content <- renderUI({
+    tagList(
+      fluidRow(uiOutput("description")),
+      fluidRow(uiOutput("mainContainer"))
+    )
+  })
+  
+  output$description <- renderUI({
+    
+  })
+  
+  output$mainContainer <- renderUI({
+    
+    # Create more UI outputs here for the plots and tables
+  }) 
+  
+  # Create the plot and table outputs here
+})

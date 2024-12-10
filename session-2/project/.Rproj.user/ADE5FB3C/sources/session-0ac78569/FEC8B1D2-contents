@@ -1,0 +1,19 @@
+server <- function(input, output) {
+ 
+  
+  votes <- reactiveValues(sealionCount = 0, puffinCount = 0, lambCount = 0, horseCount = 0)
+  
+  # Reactives ---------------------------------------------------------------
+  
+
+  # Render UI ---------------------------------------------------------------
+
+
+  # Observers ---------------------------------------------------------------
+  
+  
+  # Observe events for voting -----------------------------------------------
+  
+
+  # Observe event for resetting votes ---------------------------------------
+}

@@ -1,0 +1,51 @@
+
+nav_module_ui <- function(id) {
+  
+  ns <- NS(id)
+  
+  # this module demonstrates both ways of using shiny.router navigation
+  tagList(
+    # div(class = "row",
+    #     selectInput(
+    #       inputId = "nav_menu",
+    #       label = "Navigation",
+    #       choices = c("Chart" = "chart", "Table" = "table", "Temperature" = "temperature", "Country Vote" = "countryVote"),
+    #       width = "100%"
+    #       
+    #     )
+    #   ),
+    div(class = "col-12 nav_bar",
+        
+          radioGroupButtons(
+            inputId = ns("nav"), 
+            # note that the IDs here need to match with the IDs for your routes for change_page to work!
+            # for consistency, also align these IDs with the module IDs
+            choices = c("Chart" = "chart", "Table" = "table", "Temperature" = "temperature", "Compare Countries" = "compareCountries"),
+            status = "primary",
+            direction = "horizontal",
+            width = "100%"
+          )
+        
+    )
+  )
+}
+
+
+nav_module_server <- function(id) {
+  moduleServer(
+    id,
+    # note the inclusion of the 'session' parameter to get module state information (namespace)
+    function(input, output, session) {
+      
+      ns <- session$ns
+      
+      
+      
+      # wait for the user to click on one of the radio buttons, then navigate to that page
+      observeEvent(input$nav, {
+        change_page(input$nav)
+      }, ignoreInit = T, ignoreNULL = T)
+      
+    }
+  )
+}

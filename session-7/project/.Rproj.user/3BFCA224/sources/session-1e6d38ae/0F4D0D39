@@ -1,0 +1,26 @@
+{
+    "id": "0F4D0D39",
+    "path": "/cloud/project/result/src/nav-module.R",
+    "project_path": "result/src/nav-module.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1711387887128.0,
+    "source_on_save": false,
+    "relative_order": 7,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "36,58",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1711387901,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1711387901175,
+    "read_only": false,
+    "read_only_alternatives": []
+}

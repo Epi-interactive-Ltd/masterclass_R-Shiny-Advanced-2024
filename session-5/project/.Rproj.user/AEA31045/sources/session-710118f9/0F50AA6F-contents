@@ -1,0 +1,21 @@
+
+# Not parameterised
+query <- "SELECT * FROM world_temp_data
+          WHERE iso_a2 IN ('CA');"
+
+#the parameter in question
+var <- "CA"
+
+# dangerously parameterised
+query <- paste0(
+  "SELECT * FROM world_temp_data
+  WHERE iso_a2 IN ('", var, "');"
+)
+
+# safely parameterised
+query <- sqlInterpolate(
+  "SELECT * FROM world_temp_data
+  WHERE iso_a2 IN ?tag",
+  tag = var
+)
+

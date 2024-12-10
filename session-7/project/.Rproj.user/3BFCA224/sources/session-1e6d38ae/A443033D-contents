@@ -1,0 +1,33 @@
+# Create SQLite db for admin auth
+credentials <- data.frame(
+  user = c('Test_User'),
+  password = c('L3tM3In'),
+  admin = c(FALSE),
+  stringsAsFactors = FALSE
+)
+create_db(
+  credentials_data = credentials,
+  sqlite_path = "auth_db.sqlite",
+  passphrase = 'sqlite_db_password'
+)
+
+
+ui <- fluidPage(
+  ...
+)
+
+secure_app(ui)
+
+shinyServer(function(input, output, session) {
+  
+  res_auth <- secure_server(check_credentials = check_credentials(
+    'auth_db.sqlite',
+    passphrase = 'sqlite_db_password'
+  ))
+  output$auth_output <- renderPrint({
+    reactiveValuesToList(res_auth)
+  })
+  
+  # Normal server functionality here
+  ...
+})

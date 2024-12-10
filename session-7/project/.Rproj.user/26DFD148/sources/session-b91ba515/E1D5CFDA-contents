@@ -1,0 +1,142 @@
+temperature_page_ui <- function(id){
+  ns <- NS(id)
+  div(
+    fluidRow(
+      div(class = "col-3",
+          wellPanel(
+            h3("Temperature Filter"),
+            tagList(
+              selectInput(
+                inputId = ns("column_order"),
+                label = "Select a column to order by:",
+                choices = c("region", "country", "city", "month", "year", "avg_monthly_temp"),
+                selected = "avg_monthly_temp"
+              ),
+              selectInput(
+                inputId = ns("order_direction"),
+                label = "Order direction:",
+                choices = c("Ascending" = "asc", "Descending" = "desc"),
+                selected = "Ascending"
+              )#,
+              # sliderInput(
+              #   inputId = ns("date_slider"),
+              #   label = "Select a date range:",
+              #   min = 1995,
+              #   max = 2020,
+              #   value = c(1995, 2020),
+              #   step = 1,
+              #   sep = ""
+              # ),
+              
+            )
+          )
+      ),
+      div(class = "col-9",
+          fluidRow(
+            wellPanel(
+              dataTableOutput(ns("temperature_table"))
+            )
+          ),
+          fluidRow(
+            wellPanel(
+              plotlyOutput(ns("temperature_plot"))
+            )
+          )
+      )
+      
+    )
+    
+  )
+  
+  
+}
+
+temperature_page_server <- function(id, filtered_data, inputs) {
+  
+  moduleServer(
+    id,
+    function(input, output, session) {
+      ns <- session$ns
+      # Create a reactive to store the filtered iso_a2 codes
+      filtered_countries <- reactive({
+        unique(filtered_data()$iso_a2)
+      })
+      
+      temperature_data <- reactive({
+        req(filtered_countries())
+        
+        sel_countries <- filtered_countries()
+        
+        # when the filtered countries change, we fetch the records from the db using getCountries
+        temp_data <- getCountries(sel_countries, inputs()$year)
+        temp_data <- as.data.frame(temp_data)
+        
+        temp_data$avg_monthly_temp <- as.numeric(temp_data$avg_monthly_temp)
+        
+        return(temp_data)
+      }) %>%
+        bindCache(inputs()$year, filtered_countries())
+      
+      
+      # Create a reactive to store the filtered world_temp_data
+      # temperature_data <- reactive({
+      #   
+      #   # retrieve the country data from a reactive to minimise DB queries
+      #   temp_data <- country_data()
+      #   
+      #   temp_data$avg_monthly_temp <- as.numeric(temp_data$avg_monthly_temp)
+      #   
+      #   # # only filter the data by year if there are year filters available
+      #   # if(!is.null(input$date_slider)){
+      #   #   temp_data <- temp_data %>% filter(
+      #   #     between(year,
+      #   #             input$date_slider[1],
+      #   #             input$date_slider[2])
+      #   #   )
+      #   # }
+      #   
+      #   return(temp_data)
+      # }) %>%
+      #   bindCache(input$date_slider, filtered_countries())
+      
+      
+      
+      output$temperature_table <- renderDataTable({
+        validate(need(nrow(temperature_data()) > 0, "Selected Country(ies) have no temperature data."))
+        
+        # use the temperature_data to fill in the table
+        temp_data <- temperature_data() %>% mutate(avg_monthly_temp = as.numeric(sprintf("%.2f", avg_monthly_temp)))
+        
+        if(!is.null(input$order_direction)){
+          # Order the table based on the selected column and direction
+          if(input$order_direction == "asc"){
+            temp_data <- temp_data %>% arrange(!!sym(input$column_order))
+          }else{
+            temp_data <- temp_data %>% arrange(desc(!!sym(input$column_order)))
+          }
+        }
+        
+        datatable(
+          temp_data,
+          rownames = FALSE,
+          escape = F,
+          selection = "none",
+          options = list(ordering=F
+          )
+          
+          
+        )
+      })
+      
+      output$temperature_plot <- renderPlotly({
+        validate(need(nrow(temperature_data()) > 0, "Selected Country(ies) have no temperature data."))
+        
+        fig <- generate_temperature_plot(temperature_data())
+        fig
+      })
+      
+      # Return temperature data to be used by pdf download
+      return(temperature_data)
+    }
+  )
+}
